@@ -63,6 +63,7 @@ builder.Services
     .AddDefaultTokenProviders();
 
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<TokenService>();
 
 var app = builder.Build();
 

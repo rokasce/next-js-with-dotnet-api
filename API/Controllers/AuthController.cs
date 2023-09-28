@@ -28,4 +28,18 @@ public class AuthController : ControllerBase
             _ => throw new ArgumentOutOfRangeException(nameof(registerResult))
         };
     }
+
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
+    {
+        var (email, password) = loginRequest;
+        var loginResult = await authService.Login(email, password);
+
+        return loginResult switch
+        {
+            SuccessResult<LoginResult> success => Ok(success.Data),
+            ErrorResult<LoginResult> error => BadRequest(error.Errors),
+            _ => throw new ArgumentOutOfRangeException(nameof(loginResult))
+        };
+    }
 }
