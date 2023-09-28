@@ -1,5 +1,6 @@
 using System.Text;
 using API.Configurations;
+using API.Services;
 using API.Entities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -60,6 +61,8 @@ builder.Services
     })
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
+
+builder.Services.AddScoped<AuthService>();
 
 var app = builder.Build();
 
