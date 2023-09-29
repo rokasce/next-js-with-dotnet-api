@@ -73,12 +73,20 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 
-    app.UseCors(options =>
+    app.UseCors(builder =>
     {
-        options
-            .AllowAnyOrigin()
-            .AllowAnyHeader()
-            .AllowAnyMethod();
+        builder
+             .AllowAnyOrigin()
+             .AllowAnyMethod()
+             .AllowCredentials()
+             .AllowAnyHeader();
+
+        // Get this from configuration
+        builder
+            .WithOrigins("http://localhost:3000")
+            .AllowAnyMethod()
+            .AllowCredentials()
+            .AllowAnyHeader();
     });
 }
 

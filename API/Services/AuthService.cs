@@ -51,19 +51,33 @@ public class AuthService
         var user = await userManager.FindByEmailAsync(email);
         if (user is null) return new ErrorResult<LoginResult>("Invalid login attempt");
 
-        var isPasswordCorrect = await userManager.CheckPasswordAsync(user, password);
-        if (!isPasswordCorrect)
+        var isLoginSuccessful = await userManager.CheckPasswordAsync(user, password);
+        if (!isLoginSuccessful)
         {
             return new ErrorResult<LoginResult>("Invalid login attempt");
         }
 
+        var refreshToken = tokenService.GenerateRefreshToken(user);
         try
         {
-            var accessToken = tokenService.GenerateAccessToken(user);
-            var writtenToken = new JwtSecurityTokenHandler()
-                .WriteToken(accessToken);
+            user.RefreshTokens.Add(refreshToken);
+            await userManager.UpdateAsync(user);
+        }
+        catch (Exception e)
+        {
+            return new ErrorResult<LoginResult>(
+                "Failed persisting refresh token", new[] { new Error("RefreshTokenPersistFail", e.Message) }
+            );
+        }
 
-            return new SuccessResult<LoginResult>(new LoginResult(writtenToken, accessToken.ValidTo, new User(user.Email!)));
+        try
+        {
+            var token = tokenService.GenerateAccessToken(user);
+            var writtenToken = new JwtSecurityTokenHandler()
+                .WriteToken(token);
+
+            return new SuccessResult<LoginResult>(
+                new LoginResult(writtenToken, token.ValidTo, refreshToken.Token, new User(user.Email!)));
         }
         catch (Exception e)
         {
@@ -75,4 +89,4 @@ public class AuthService
 
 public record RegisterResult(ApiUser User);
 
-public record LoginResult(string AccessToken, DateTime Expires, User User);
+public record LoginResult(string AccessToken, DateTime Expires, string RefreshToken, User User);
