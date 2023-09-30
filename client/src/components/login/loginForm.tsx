@@ -20,6 +20,9 @@ import {
 } from "../ui/form";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import { PUBLIC_API } from "@/lib/api";
+import useAuthContext from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
 
 const LoginFormSchema = z.object({
   email: z.string().email(),
@@ -27,6 +30,9 @@ const LoginFormSchema = z.object({
 });
 
 function LoginForm() {
+  const { setAuth } = useAuthContext();
+  const { push } = useRouter();
+
   const form = useForm<z.infer<typeof LoginFormSchema>>({
     resolver: zodResolver(LoginFormSchema),
     defaultValues: {
@@ -35,8 +41,39 @@ function LoginForm() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof LoginFormSchema>) {
+  async function onSubmit(values: z.infer<typeof LoginFormSchema>) {
     console.log(values);
+
+    // if (!values.email || !values.password) return;
+
+    const { email, password } = values;
+
+    try {
+      const result = await PUBLIC_API.post(
+        "/auth/login",
+        JSON.stringify({ email, password }),
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+
+      if (result.status !== 200) {
+        console.log("Login failed");
+
+        return;
+      }
+
+      setAuth(result.data);
+
+      console.log("Data:", result.data);
+
+      push("/forecasts");
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   return (
