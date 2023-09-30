@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
+[ApiController]
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
@@ -64,7 +65,7 @@ public class AuthController : ControllerBase
         };
     }
 
-    [HttpGet("refresh-token")]
+    [HttpPost("refresh-token")]
     public async Task<ActionResult> RefreshToken()
     {
         var refreshToken = Request.Cookies["refreshToken"];

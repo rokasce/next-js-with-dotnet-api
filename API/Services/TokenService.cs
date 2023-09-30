@@ -83,7 +83,7 @@ public class TokenService
             }
 
 
-            return (JwtSecurityToken)validatedToken;
+            return jwtSecurityToken;
         }
         catch (SecurityTokenException)
         {

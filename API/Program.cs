@@ -2,10 +2,10 @@ using System.Text;
 using API.Configurations;
 using API.Services;
 using API.Entities;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -28,29 +28,31 @@ builder.Services.Configure<JwtSettings>(jwtSettingsSection);
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(options =>
-{
-    options.SaveToken = true;
-    options.RequireHttpsMetadata = false;
-
-    options.TokenValidationParameters = new TokenValidationParameters
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(
+    authenticationScheme: JwtBearerDefaults.AuthenticationScheme,
+    configureOptions: options =>
     {
-        ValidateIssuer = false,
-        ValidateAudience = false,
-        ValidateLifetime = true,
-        ClockSkew = TimeSpan.Zero,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtSettings!.Issuer,
-        ValidAudience = jwtSettings!.Audience,
-        // FIXME: Add JwtSettings validation on Startup
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.JwtTokenSecret!))
-    };
-});
+        options.SaveToken = true;
+        options.RequireHttpsMetadata = false;
+
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtSettings!.Issuer,
+            ValidAudience = jwtSettings!.Audience,
+            // FIXME: Add JwtSettings validation on Startup
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.JwtTokenSecret!))
+        };
+    });
 
 builder.Services
-    .AddIdentity<ApiUser, IdentityRole>(options =>
+    .AddIdentityCore<ApiUser>(options =>
     {
         options.User.RequireUniqueEmail = true;
         options.Password.RequireLowercase = true;
@@ -65,6 +67,24 @@ builder.Services
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<TokenService>();
 
+var corsPolicyName = "AllowAll";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(corsPolicyName, builder =>
+    {
+        builder.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowCredentials()
+            .AllowAnyHeader();
+
+        // Get this from configuration
+        builder.WithOrigins("http://localhost:3000")
+            .AllowAnyMethod()
+            .AllowCredentials()
+            .AllowAnyHeader();
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -73,24 +93,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 
-    app.UseCors(builder =>
-    {
-        builder
-             .AllowAnyOrigin()
-             .AllowAnyMethod()
-             .AllowCredentials()
-             .AllowAnyHeader();
-
-        // Get this from configuration
-        builder
-            .WithOrigins("http://localhost:3000")
-            .AllowAnyMethod()
-            .AllowCredentials()
-            .AllowAnyHeader();
-    });
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors(corsPolicyName);
 
 app.UseAuthentication();
 
