@@ -24,33 +24,37 @@ import { PUBLIC_API } from "@/lib/api";
 import useAuthContext from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useState } from "react";
-import Spinner, { AbsoluteSpinner } from "../ui/spinner";
 
-const LoginFormSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8).max(255),
-});
+const RegisterFormSchema = z
+  .object({
+    email: z.string().email(),
+    password: z.string().min(8).max(255),
+    confirmPassword: z.string().min(8).max(255),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Passwords do not match",
+  });
 
-function LoginForm() {
+function RegisterForm() {
   const { setAuth } = useAuthContext();
   const { push } = useRouter();
 
-  const [error, setError] = useState<string | null>(null);
-
-  const form = useForm<z.infer<typeof LoginFormSchema>>({
-    resolver: zodResolver(LoginFormSchema),
+  const form = useForm<z.infer<typeof RegisterFormSchema>>({
+    resolver: zodResolver(RegisterFormSchema),
     defaultValues: {
       email: "",
       password: "",
+      confirmPassword: "",
     },
   });
 
-  async function onSubmit(values: z.infer<typeof LoginFormSchema>) {
-    setError(null);
+  async function onSubmit(values: z.infer<typeof RegisterFormSchema>) {
+    console.log(values);
 
-    const { email, password } = values;
-    if (!email || !password) return;
+    // if (!values.email || !values.password) return;
+
+    const { email, password, confirmPassword } = values;
 
     try {
       const result = await PUBLIC_API.post(
@@ -64,38 +68,31 @@ function LoginForm() {
         }
       );
 
+      if (result.status !== 200) {
+        console.log("Login failed");
+
+        return;
+      }
+
       setAuth(result.data);
 
+      console.log("Data:", result.data);
+
       push("/forecasts");
-    } catch (error: any) {
-      const { status } = error?.response;
-      if (status === 400) {
-        setError("Invalid credentials");
-
-        return;
-      }
-
-      if (status === 500) {
-        setError("Something went wrong");
-
-        return;
-      }
+    } catch (error) {
+      console.log(error);
     }
   }
 
   return (
-    <Card className='w-[375px] relative'>
+    <Card className='w-[375px]'>
       <CardHeader>
-        <CardTitle>Login</CardTitle>
+        <CardTitle>Register</CardTitle>
         <CardDescription>Authentication demo</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          {form.formState.isSubmitting && <AbsoluteSpinner />}
           <form onSubmit={form.handleSubmit(onSubmit)}>
-            {error && (
-              <FormMessage className='pb-2'>Error: {error}</FormMessage>
-            )}
             <FormField
               control={form.control}
               name='email'
@@ -126,6 +123,23 @@ function LoginForm() {
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name='confirmPassword'
+              render={({ field }) => (
+                <FormItem className='my-4'>
+                  <FormLabel>Confirm password</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder='Confirm your password'
+                      type='password'
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <Button
               type='submit'
               className='w-full'
@@ -134,6 +148,7 @@ function LoginForm() {
               Submit
             </Button>
           </form>
+
           <div
             className='mx-auto my-4 flex w-full items-center justify-evenly 
           before:mr-4 before:block before:h-px before:flex-grow before:bg-stone-400 
@@ -142,9 +157,9 @@ function LoginForm() {
             or
           </div>
           <p>
-            If you don&apos;t have an account, please{" "}
-            <Link href='/register' className='text-blue-500 hover:underline'>
-              Register
+            Already have an account?
+            <Link href='/login' className='text-blue-500 hover:underline'>
+              Login
             </Link>
           </p>
         </Form>
@@ -153,4 +168,4 @@ function LoginForm() {
   );
 }
 
-export default LoginForm;
+export default RegisterForm;
