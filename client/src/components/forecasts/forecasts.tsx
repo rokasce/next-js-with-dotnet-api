@@ -4,9 +4,11 @@ import { useEffect, useState } from "react";
 import useAuthContext from "@/hooks/useAuth";
 import useApi from "@/hooks/useApi";
 import { Button } from "../ui/button";
+import PersistLogin from "../persistLogin";
 
 function Forecasts() {
   const { auth } = useAuthContext();
+
   const API = useApi();
 
   const [forecasts, setForecasts] = useState<Forecast[]>([]);
@@ -30,21 +32,23 @@ function Forecasts() {
   }, []);
 
   return (
-    <section>
-      <h1>Forecasts</h1>
+    <PersistLogin>
+      <section>
+        <h1>Forecasts</h1>
 
-      <p> {auth?.user?.email} </p>
+        <p> {auth?.user?.email} </p>
 
-      <ul>
-        {forecasts.map((forecast) => (
-          <li key={forecast.date.toString()}>
-            {forecast.date.toString()}: {forecast.temperatureC}
-          </li>
-        ))}
-      </ul>
+        <ul>
+          {forecasts.map((forecast) => (
+            <li key={forecast.date.toString()}>
+              {forecast.date.toString()}: {forecast.temperatureC}
+            </li>
+          ))}
+        </ul>
 
-      <Button onClick={() => getForecasts()}>Refresh</Button>
-    </section>
+        <Button onClick={() => getForecasts()}>Refresh</Button>
+      </section>
+    </PersistLogin>
   );
 }
 
