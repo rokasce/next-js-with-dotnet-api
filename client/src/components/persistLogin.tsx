@@ -1,16 +1,25 @@
-import { useEffect, useState } from "react";
+"use client";
+
+import { createContext, useContext, useEffect, useState } from "react";
 import useRefreshToken from "../hooks/useRefreshToken";
 import useAuth from "../hooks/useAuth";
 
-type Props = {
+type UserContext = {
+  isLoading: boolean;
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+type UserContextProviderProps = {
   children: React.ReactNode;
 };
 
-function PersistLogin({ children }: Props) {
-  const [isLoading, setIsLoading] = useState(true);
+const UserContext = createContext<UserContext | null>(null);
 
+export const UserContextProvider = ({ children }: UserContextProviderProps) => {
   const { refresh } = useRefreshToken();
   const { auth } = useAuth();
+
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const verifyRefreshToken = async () => {
@@ -30,7 +39,24 @@ function PersistLogin({ children }: Props) {
     }
   }, []);
 
-  return <> {isLoading ? <div>Loading...</div> : children} </>;
-}
+  return (
+    <UserContext.Provider
+      value={{
+        isLoading,
+        setLoading: setIsLoading,
+      }}
+    >
+      {children}
+    </UserContext.Provider>
+  );
+};
 
-export default PersistLogin;
+export function useUserContext() {
+  const context = useContext(UserContext);
+
+  if (!context) {
+    throw new Error("useUserContext must be used within AuthProvider");
+  }
+
+  return context;
+}

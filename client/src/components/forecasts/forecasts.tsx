@@ -1,28 +1,29 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import useAuthContext from "@/hooks/useAuth";
 import useApi from "@/hooks/useApi";
-import { Button } from "../ui/button";
-import PersistLogin from "../persistLogin";
+import { useUserContext } from "../persistLogin";
+import { AbsoluteSpinner } from "../ui/spinner";
 
 function Forecasts() {
-  const { auth } = useAuthContext();
-
-  const API = useApi();
+  const { api } = useApi();
+  const { isLoading } = useUserContext();
 
   const [forecasts, setForecasts] = useState<Forecast[]>([]);
 
   async function getForecasts() {
     try {
-      const result = await API.get("/weatherforecast", {
+      const result = await api.get("/weatherforecast", {
         withCredentials: true,
       });
 
-      if (result.status === 200) {
-        setForecasts(result.data);
+      setForecasts(result.data);
+    } catch (error: any) {
+      const { status } = error?.response;
+      if (status === 500) {
+        console.log("Something went wrong");
       }
-    } catch (error) {
+
       console.log(error);
     }
   }
@@ -31,24 +32,19 @@ function Forecasts() {
     getForecasts();
   }, []);
 
+  if (isLoading) return <AbsoluteSpinner />;
+
   return (
-    <PersistLogin>
-      <section>
-        <h1>Forecasts</h1>
-
-        <p> {auth?.user?.email} </p>
-
-        <ul>
-          {forecasts.map((forecast) => (
-            <li key={forecast.date.toString()}>
-              {forecast.date.toString()}: {forecast.temperatureC}
-            </li>
-          ))}
-        </ul>
-
-        <Button onClick={() => getForecasts()}>Refresh</Button>
-      </section>
-    </PersistLogin>
+    <section>
+      <ul>
+        {forecasts.map((forecast) => (
+          <li key={forecast.date.toString()}>
+            {forecast.date.toString()}: {forecast.temperatureC} -{" "}
+            {forecast.summary}
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 

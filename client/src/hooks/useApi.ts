@@ -47,5 +47,5 @@ export default function useApi() {
     };
   }, [auth, refresh]);
 
-  return API;
+  return { api: API };
 }
