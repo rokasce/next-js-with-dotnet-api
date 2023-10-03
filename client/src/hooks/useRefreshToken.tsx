@@ -1,12 +1,15 @@
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { PUBLIC_API } from "@/lib/api";
 import useAuthContext from "./useAuth";
 
 export default function useRefreshToken() {
   const { setAuth } = useAuthContext();
   const { replace } = useRouter();
+  const pathname = usePathname();
 
   const refresh = async () => {
+    if (pathname === "/") return;
+
     try {
       const response = await PUBLIC_API.post("/auth/refresh-token", null, {
         withCredentials: true,

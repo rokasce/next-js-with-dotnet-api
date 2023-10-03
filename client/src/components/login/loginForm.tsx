@@ -25,7 +25,8 @@ import useAuthContext from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
-import Spinner, { AbsoluteSpinner } from "../ui/spinner";
+import { AbsoluteSpinner } from "../ui/spinner";
+import { usePersistLoginContext } from "@/context/persistLoginContext";
 
 const LoginFormSchema = z.object({
   email: z.string().email(),
@@ -33,6 +34,7 @@ const LoginFormSchema = z.object({
 });
 
 function LoginForm() {
+  const { isLoading } = usePersistLoginContext();
   const { setAuth } = useAuthContext();
   const { push } = useRouter();
 
@@ -82,6 +84,8 @@ function LoginForm() {
       }
     }
   }
+
+  if (isLoading) return <AbsoluteSpinner />;
 
   return (
     <Card className='w-[375px] relative'>
