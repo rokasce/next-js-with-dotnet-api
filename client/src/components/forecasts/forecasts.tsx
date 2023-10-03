@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import useApi from "@/hooks/useApi";
-import { useUserContext } from "../persistLogin";
+import { usePersistLoginContext } from "../../context/persistLoginContext";
 import { AbsoluteSpinner } from "../ui/spinner";
 
 function Forecasts() {
   const { api } = useApi();
-  const { isLoading } = useUserContext();
+  const { isLoading } = usePersistLoginContext();
 
   const [forecasts, setForecasts] = useState<Forecast[]>([]);
 

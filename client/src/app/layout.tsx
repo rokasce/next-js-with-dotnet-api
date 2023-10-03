@@ -1,9 +1,9 @@
-import { AuthProvider } from "@/context/authContext";
 import "./globals.css";
+import { AuthProvider } from "@/context/authContext";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Navbar from "@/components/navbar";
-import { UserContextProvider } from "@/components/persistLogin";
+import { PersistLoginProvider } from "@/context/persistLoginContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,8 +22,10 @@ export default function RootLayout({
       <body className={inter.className}>
         <main className='h-screen flex flex-col justify-center items-center'>
           <AuthProvider>
-            <Navbar />
-            <UserContextProvider>{children}</UserContextProvider>
+            <PersistLoginProvider>
+              <Navbar />
+              {children}
+            </PersistLoginProvider>
           </AuthProvider>
         </main>
       </body>

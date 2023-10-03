@@ -9,13 +9,15 @@ type UserContext = {
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-type UserContextProviderProps = {
+type PersistLoginContextProviderProps = {
   children: React.ReactNode;
 };
 
-const UserContext = createContext<UserContext | null>(null);
+const PersistLoginContext = createContext<UserContext | null>(null);
 
-export const UserContextProvider = ({ children }: UserContextProviderProps) => {
+export const PersistLoginProvider = ({
+  children,
+}: PersistLoginContextProviderProps) => {
   const { refresh } = useRefreshToken();
   const { auth } = useAuth();
 
@@ -40,22 +42,22 @@ export const UserContextProvider = ({ children }: UserContextProviderProps) => {
   }, []);
 
   return (
-    <UserContext.Provider
+    <PersistLoginContext.Provider
       value={{
         isLoading,
         setLoading: setIsLoading,
       }}
     >
       {children}
-    </UserContext.Provider>
+    </PersistLoginContext.Provider>
   );
 };
 
-export function useUserContext() {
-  const context = useContext(UserContext);
+export function usePersistLoginContext() {
+  const context = useContext(PersistLoginContext);
 
   if (!context) {
-    throw new Error("useUserContext must be used within AuthProvider");
+    throw new Error("usePersistLoginContext must be used within AuthProvider");
   }
 
   return context;
