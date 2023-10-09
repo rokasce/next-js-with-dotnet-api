@@ -6,6 +6,7 @@ using API.Models.DTO;
 using API.Models.DTO.V1.Requests;
 using API.Services;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -71,6 +72,16 @@ public class AuthController : ControllerBase
         };
     }
 
+    [HttpPost("logout")]
+    public async Task<IActionResult>Logout()
+    {
+        await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+
+        Response.Cookies.Delete("refreshToken");
+
+        return Redirect("https://localhost:3000");
+    }
+
     [HttpPost]
     [Route("login/{provider}")]
     public IActionResult ExternalLogin(string provider)
@@ -93,7 +104,6 @@ public class AuthController : ControllerBase
 
             var email = (principal.FindFirstValue(ClaimTypes.Email) ?? principal.Identity?.Name)!;
 
-            // TODO: Create token for External user;
             var createExternalUserResult = await authService.CreateExternalUserAsync(provider, new ExternalUserInfo(email, id));
 
             if (createExternalUserResult.Success)
