@@ -68,7 +68,7 @@ function LoginForm() {
 
       setAuth(result.data);
 
-      push("/forecasts");
+      push("/home");
     } catch (error: any) {
       const { status } = error?.response;
       if (status === 400) {

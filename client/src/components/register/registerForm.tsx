@@ -24,6 +24,9 @@ import { PUBLIC_API } from "@/lib/api";
 import useAuthContext from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useState } from "react";
+import { AbsoluteSpinner } from "../ui/spinner";
+import { Axios, AxiosError } from "axios";
 
 const RegisterFormSchema = z
   .object({
@@ -37,8 +40,9 @@ const RegisterFormSchema = z
   });
 
 function RegisterForm() {
-  const { setAuth } = useAuthContext();
   const { push } = useRouter();
+
+  const [error, setError] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof RegisterFormSchema>>({
     resolver: zodResolver(RegisterFormSchema),
@@ -50,37 +54,36 @@ function RegisterForm() {
   });
 
   async function onSubmit(values: z.infer<typeof RegisterFormSchema>) {
-    console.log(values);
-
-    // if (!values.email || !values.password) return;
+    setError(null);
 
     const { email, password, confirmPassword } = values;
+    if (!email || !password || !confirmPassword) return;
 
     try {
-      const result = await PUBLIC_API.post(
-        "/auth/login",
+      await PUBLIC_API.post(
+        "/auth/register",
         JSON.stringify({ email, password }),
         {
           headers: {
             "Content-Type": "application/json",
           },
-          withCredentials: true,
         }
       );
 
-      if (result.status !== 200) {
-        console.log("Login failed");
+      push("/login");
+    } catch (error: any) {
+      const { response } = error;
+      if (response.status === 400) {
+        const { details } = response?.data?.at(0);
 
+        setError(details ?? "Something went wrong");
         return;
       }
 
-      setAuth(result.data);
-
-      console.log("Data:", result.data);
-
-      push("/forecasts");
-    } catch (error) {
-      console.log(error);
+      if (response.status !== 200) {
+        setError("Something went wrong, please try again");
+        return;
+      }
     }
   }
 
@@ -93,6 +96,10 @@ function RegisterForm() {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
+            {form.formState.isSubmitting && <AbsoluteSpinner />}
+            {error && error !== "" && (
+              <FormMessage className='pb-2'>{error}</FormMessage>
+            )}
             <FormField
               control={form.control}
               name='email'
