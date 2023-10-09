@@ -138,6 +138,14 @@ function LoginForm() {
               Submit
             </Button>
           </form>
+          <form
+            method='POST'
+            action={`https://localhost:7014/auth/login/Google`}
+          >
+            <Button type='submit' className='w-full mt-4'>
+              Sign in with Google
+            </Button>
+          </form>
           <div
             className='mx-auto my-4 flex w-full items-center justify-evenly 
           before:mr-4 before:block before:h-px before:flex-grow before:bg-stone-400 
