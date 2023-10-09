@@ -1,11 +1,11 @@
-using System.Text;
 using API.Configurations;
-using API.Services;
 using API.Entities;
+using API.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -21,36 +21,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(configuration.GetConnectionString("Default"));
 });
 
-var jwtSettingsSection = configuration.GetSection(JwtSettings.SectionName);
-var jwtSettings = jwtSettingsSection.Get<JwtSettings>();
-
-builder.Services.Configure<JwtSettings>(jwtSettingsSection);
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(
-    authenticationScheme: JwtBearerDefaults.AuthenticationScheme,
-    configureOptions: options =>
-    {
-        options.SaveToken = true;
-        options.RequireHttpsMetadata = false;
-
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = false,
-            ValidateAudience = false,
-            ValidateLifetime = true,
-            ClockSkew = TimeSpan.Zero,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtSettings!.Issuer,
-            ValidAudience = jwtSettings!.Audience,
-            // FIXME: Add JwtSettings validation on Startup
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.JwtTokenSecret!))
-        };
-    });
-
 builder.Services
     .AddIdentityCore<ApiUser>(options =>
     {
@@ -62,7 +32,60 @@ builder.Services
         options.Password.RequiredLength = 6;
     })
     .AddEntityFrameworkStores<AppDbContext>()
+    .AddSignInManager()
     .AddDefaultTokenProviders();
+
+var googleSignInSettingsSection = configuration.GetSection(GoogleSigninSettings.SectionName);
+var googleSignInSettings = googleSignInSettingsSection.Get<GoogleSigninSettings>();
+
+var jwtSettingsSection = configuration.GetSection(JwtSettings.SectionName);
+var jwtSettings = jwtSettingsSection.Get<JwtSettings>();
+
+builder.Services.Configure<JwtSettings>(jwtSettingsSection);
+
+
+builder.Services
+    .AddAuthentication(x =>
+    {
+        x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(x =>
+    {
+        x.RequireHttpsMetadata = true;
+        x.SaveToken = true;
+        x.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = jwtSettings!.Issuer,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtSettings.JwtTokenSecret)),
+            ValidAudience = jwtSettings!.Audience,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromMinutes(1)
+        };
+
+        x.Events = new JwtBearerEvents
+        {
+            OnAuthenticationFailed = context =>
+            {
+                if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
+                {
+                    context.Response.Headers.Add("Token-Expired", "true");
+                }
+                return Task.CompletedTask;
+            }
+        };
+    })
+    .AddCookie(IdentityConstants.ExternalScheme)
+    .AddGoogle(options =>
+       {
+           options.ClientId = googleSignInSettings!.ClientId;
+           options.ClientSecret = googleSignInSettings.ClientSecret;
+
+           options.SignInScheme = IdentityConstants.ExternalScheme;
+       });
 
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<TokenService>();
@@ -78,10 +101,11 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader();
 
         // Get this from configuration
-        builder.WithOrigins("http://localhost:3000")
+        builder
             .AllowAnyMethod()
             .AllowCredentials()
-            .AllowAnyHeader();
+            .AllowAnyHeader()
+            .WithOrigins("https://localhost:3000");
     });
 });
 

@@ -1,37 +1,42 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using API.Configurations;
 using API.Entities;
 using API.Models.DTO;
 using API.Models.DTO.V1.Requests;
 using API.Services;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
-[ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
 public class AuthController : ControllerBase
 {
     private readonly AuthService authService;
     private readonly TokenService tokenService;
     private readonly UserManager<ApiUser> userManager;
+    private readonly SignInManager<ApiUser> signInManager;
 
     public AuthController(AuthService authService,
         UserManager<ApiUser> userManager,
-        TokenService tokenService)
+        TokenService tokenService,
+        SignInManager<ApiUser> signInManager)
     {
         this.authService = authService;
         this.userManager = userManager;
         this.tokenService = tokenService;
+        this.signInManager = signInManager;
     }
 
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest registerRequest)
     {
         var (email, password) = registerRequest;
-        var registerResult = await authService.Register(email, password);
+        var registerResult = await authService.RegisterAsync(email, password);
 
         return registerResult switch
         {
@@ -44,8 +49,9 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
     {
+
         var (email, password) = loginRequest;
-        var loginResult = await authService.Login(email, password);
+        var loginResult = await authService.LoginAsync(email, password);
 
         if (loginResult.Success)
         {
@@ -64,6 +70,43 @@ public class AuthController : ControllerBase
             _ => throw new ArgumentOutOfRangeException(nameof(loginResult))
         };
     }
+
+    [HttpPost]
+    [Route("login/{provider}")]
+    public IActionResult ExternalLogin(string provider)
+    {
+        return Challenge(
+            authenticationSchemes: new string[] { provider },
+            properties: new AuthenticationProperties() { RedirectUri = $"/auth/signing/${provider}" });
+    }
+
+    [HttpGet]
+    [Route("signing/{provider}")]
+    public async Task<IActionResult> ExternalLoginComplete(string provider)
+    {
+        var result = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
+
+        if (result.Succeeded)
+        {
+            var principal = result.Principal;
+            var id = principal.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var email = (principal.FindFirstValue(ClaimTypes.Email) ?? principal.Identity?.Name)!;
+
+            // TODO: Create token for External user;
+            var createExternalUserResult = await authService.CreateExternalUserAsync(provider, new ExternalUserInfo(email, id));
+
+            if (createExternalUserResult.Success)
+            {
+                SetRefreshToken(createExternalUserResult.Data.RefreshToken);
+
+                return Redirect("https://localhost:3000/home");
+            }
+        }
+
+        return Redirect("https://localhost:3000/");
+    }
+
 
     [HttpPost("refresh-token")]
     public async Task<ActionResult> RefreshToken()
@@ -115,3 +158,5 @@ public class AuthController : ControllerBase
         Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
     }
 }
+
+public record GoogleAuthRequest(string IdToken);
