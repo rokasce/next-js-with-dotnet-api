@@ -140,7 +140,7 @@ function LoginForm() {
           </form>
           <form
             method='POST'
-            action={`https://localhost:7014/auth/login/Google`}
+            action={`${process.env.NEXT_PUBLIC_API_URL}/auth/login/Google`}
           >
             <Button type='submit' className='w-full mt-4'>
               Sign in with Google
