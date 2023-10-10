@@ -11,6 +11,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
+// TODO: We are hardcoding FE URL's everywhere, move it out to Settings
+
 [Route("[controller]")]
 public class AuthController : ControllerBase
 {
@@ -89,6 +91,9 @@ public class AuthController : ControllerBase
     [Route("signing/{provider}")]
     public async Task<IActionResult> ExternalLoginComplete(string provider)
     {
+        // TODO: Signing in with Google account will override account password of the same email.
+        // Should we separate these accounts or merge it together?
+
         var result = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
 
         if (result.Succeeded)
@@ -110,7 +115,6 @@ public class AuthController : ControllerBase
 
         return Redirect("https://localhost:3000/");
     }
-
 
     [HttpPost("refresh-token")]
     public async Task<ActionResult> RefreshToken()
