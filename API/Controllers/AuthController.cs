@@ -1,13 +1,10 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using API.Configurations;
 using API.Entities;
 using API.Models.DTO;
 using API.Models.DTO.V1.Requests;
 using API.Services;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -20,17 +17,14 @@ public class AuthController : ControllerBase
     private readonly AuthService authService;
     private readonly TokenService tokenService;
     private readonly UserManager<ApiUser> userManager;
-    private readonly SignInManager<ApiUser> signInManager;
 
     public AuthController(AuthService authService,
         UserManager<ApiUser> userManager,
-        TokenService tokenService,
-        SignInManager<ApiUser> signInManager)
+        TokenService tokenService)
     {
         this.authService = authService;
         this.userManager = userManager;
         this.tokenService = tokenService;
-        this.signInManager = signInManager;
     }
 
     [HttpPost("register")]
@@ -73,7 +67,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("logout")]
-    public async Task<IActionResult>Logout()
+    public async Task<IActionResult> Logout()
     {
         await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 
@@ -104,7 +98,7 @@ public class AuthController : ControllerBase
 
             var email = (principal.FindFirstValue(ClaimTypes.Email) ?? principal.Identity?.Name)!;
 
-            var createExternalUserResult = await authService.CreateExternalUserAsync(provider, new ExternalUserInfo(email, id));
+            var createExternalUserResult = await authService.CreateExternalUserAsync(provider, new ExternalUserInfo(email, id!));
 
             if (createExternalUserResult.Success)
             {
@@ -168,5 +162,3 @@ public class AuthController : ControllerBase
         Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
     }
 }
-
-public record GoogleAuthRequest(string IdToken);

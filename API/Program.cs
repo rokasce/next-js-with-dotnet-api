@@ -40,9 +40,10 @@ var googleSignInSettings = googleSignInSettingsSection.Get<GoogleSigninSettings>
 
 var jwtSettingsSection = configuration.GetSection(JwtSettings.SectionName);
 var jwtSettings = jwtSettingsSection.Get<JwtSettings>();
-
-builder.Services.Configure<JwtSettings>(jwtSettingsSection);
-
+builder.Services.AddOptions<JwtSettings>()
+    .BindConfiguration(JwtSettings.SectionName)
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 
 builder.Services
     .AddAuthentication(x =>

@@ -1,12 +1,22 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace API.Configurations;
 
 public class JwtSettings
 {
     public const string SectionName = "Jwt";
 
-    public string Audience { get; set; }
-    public string Issuer { get; set; }
-    public string JwtTokenSecret { get; set; }
+    [Required]
+    public string Audience { get; set; } = string.Empty;
+    
+    [Required]
+    public string Issuer { get; set; } = string.Empty;
+
+    [Required]
+    public string JwtTokenSecret { get; set; } = string.Empty;
+
     public int TokenDurationInMinutes { get; set; } = 30;
-    public string RefreshTokenSecret { get; set; }
+
+    [Required]
+    public string RefreshTokenSecret { get; set; } = string.Empty;
 }
