@@ -45,6 +45,11 @@ builder.Services.AddOptions<JwtSettings>()
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
+builder.Services.AddOptions<WebAppSettings>()
+    .BindConfiguration(WebAppSettings.SectionName)
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
 builder.Services
     .AddAuthentication(x =>
     {

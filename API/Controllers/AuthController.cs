@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using API.Configurations;
 using API.Entities;
 using API.Models.DTO;
 using API.Models.DTO.V1.Requests;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace API.Controllers;
 
@@ -19,14 +21,17 @@ public class AuthController : ControllerBase
     private readonly AuthService authService;
     private readonly TokenService tokenService;
     private readonly UserManager<ApiUser> userManager;
+    private readonly WebAppSettings webAppSettings;
 
     public AuthController(AuthService authService,
         UserManager<ApiUser> userManager,
-        TokenService tokenService)
+        TokenService tokenService,
+        IOptions<WebAppSettings> webAppSettings)
     {
         this.authService = authService;
         this.userManager = userManager;
         this.tokenService = tokenService;
+        this.webAppSettings = webAppSettings.Value;
     }
 
     [HttpPost("register")]
@@ -71,11 +76,12 @@ public class AuthController : ControllerBase
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {
+        // TODO: Check if Third party token is being invalidated after login
         await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 
         Response.Cookies.Delete("refreshToken");
 
-        return Redirect("https://localhost:3000");
+        return Redirect($"{webAppSettings.BaseUrl}");
     }
 
     [HttpPost]
@@ -109,11 +115,11 @@ public class AuthController : ControllerBase
             {
                 SetRefreshToken(createExternalUserResult.Data.RefreshToken);
 
-                return Redirect("https://localhost:3000/home");
+                return Redirect($"{webAppSettings.BaseUrl}/home");
             }
         }
 
-        return Redirect("https://localhost:3000/");
+        return Redirect($"{webAppSettings.BaseUrl}");
     }
 
     [HttpPost("refresh-token")]
