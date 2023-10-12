@@ -5,7 +5,7 @@ import useApi from "@/hooks/useApi";
 import { usePersistLoginContext } from "../../context/persistLoginContext";
 import { AbsoluteSpinner } from "../ui/spinner";
 
-function Forecasts() {
+export default function Forecasts() {
   const { api } = useApi();
   const { isLoading } = usePersistLoginContext();
 
@@ -47,8 +47,6 @@ function Forecasts() {
     </section>
   );
 }
-
-export default Forecasts;
 
 type Forecast = {
   date: Date;

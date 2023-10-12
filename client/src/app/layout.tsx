@@ -18,9 +18,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang='en'>
+    <html lang="en">
       <body className={inter.className}>
-        <main className='h-screen flex flex-col justify-center items-center'>
+        <main className="flex h-screen flex-col items-center justify-center">
           <AuthProvider>
             <PersistLoginProvider>
               <Navbar />

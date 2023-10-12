@@ -1,11 +1,9 @@
 import RegisterForm from "@/components/register/registerForm";
 
-function Register() {
+export default function Register() {
   return (
-    <main className='w-full'>
+    <main className="w-full">
       <RegisterForm />
     </main>
   );
 }
-
-export default Register;

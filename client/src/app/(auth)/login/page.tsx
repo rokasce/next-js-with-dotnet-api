@@ -1,11 +1,9 @@
 import LoginForm from "@/components/login/loginForm";
 
-function Login() {
+export default function Login() {
   return (
-    <main className='w-full'>
+    <main className="w-full">
       <LoginForm />
     </main>
   );
 }
-
-export default Login;

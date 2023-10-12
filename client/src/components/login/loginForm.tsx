@@ -33,7 +33,7 @@ const LoginFormSchema = z.object({
   password: z.string().min(8).max(255),
 });
 
-function LoginForm() {
+export default function LoginForm() {
   const { isLoading } = usePersistLoginContext();
   const { setAuth } = useAuthContext();
   const { push } = useRouter();
@@ -63,7 +63,7 @@ function LoginForm() {
             "Content-Type": "application/json",
           },
           withCredentials: true,
-        }
+        },
       );
 
       setAuth(result.data);
@@ -88,7 +88,7 @@ function LoginForm() {
   if (isLoading) return <AbsoluteSpinner />;
 
   return (
-    <Card className='w-[375px] relative'>
+    <Card className="relative w-[375px]">
       <CardHeader>
         <CardTitle>Login</CardTitle>
         <CardDescription>Authentication demo</CardDescription>
@@ -98,16 +98,16 @@ function LoginForm() {
           {form.formState.isSubmitting && <AbsoluteSpinner />}
           <form onSubmit={form.handleSubmit(onSubmit)}>
             {error && (
-              <FormMessage className='pb-2'>Error: {error}</FormMessage>
+              <FormMessage className="pb-2">Error: {error}</FormMessage>
             )}
             <FormField
               control={form.control}
-              name='email'
+              name="email"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Username</FormLabel>
                   <FormControl>
-                    <Input placeholder='Enter your email address' {...field} />
+                    <Input placeholder="Enter your email address" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -115,14 +115,14 @@ function LoginForm() {
             />
             <FormField
               control={form.control}
-              name='password'
+              name="password"
               render={({ field }) => (
-                <FormItem className='my-4'>
+                <FormItem className="my-4">
                   <FormLabel>Password</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder='Enter your password'
-                      type='password'
+                      placeholder="Enter your password"
+                      type="password"
                       {...field}
                     />
                   </FormControl>
@@ -131,31 +131,31 @@ function LoginForm() {
               )}
             />
             <Button
-              type='submit'
-              className='w-full'
+              type="submit"
+              className="w-full"
               disabled={!form.formState.isValid}
             >
               Submit
             </Button>
           </form>
           <form
-            method='POST'
+            method="POST"
             action={`${process.env.NEXT_PUBLIC_API_URL}/auth/login/Google`}
           >
-            <Button type='submit' className='w-full mt-4'>
+            <Button type="submit" className="mt-4 w-full">
               Sign in with Google
             </Button>
           </form>
           <div
-            className='mx-auto my-4 flex w-full items-center justify-evenly 
+            className="mx-auto my-4 flex w-full items-center justify-evenly 
           before:mr-4 before:block before:h-px before:flex-grow before:bg-stone-400 
-          after:ml-4 after:block after:h-px after:flex-grow after:bg-stone-400'
+          after:ml-4 after:block after:h-px after:flex-grow after:bg-stone-400"
           >
             or
           </div>
           <p>
             If you don&apos;t have an account, please{" "}
-            <Link href='/register' className='text-blue-500 hover:underline'>
+            <Link href="/register" className="text-blue-500 hover:underline">
               Register
             </Link>
           </p>
@@ -164,5 +164,3 @@ function LoginForm() {
     </Card>
   );
 }
-
-export default LoginForm;
