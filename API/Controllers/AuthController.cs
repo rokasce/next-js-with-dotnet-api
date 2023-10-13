@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using API.Configurations;
@@ -6,6 +7,7 @@ using API.Models.DTO;
 using API.Models.DTO.V1.Requests;
 using API.Services;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,23 +15,24 @@ using Microsoft.Extensions.Options;
 
 namespace API.Controllers;
 
-// TODO: We are hardcoding FE URL's everywhere, move it out to Settings
-
 [Route("[controller]")]
 public class AuthController : ControllerBase
 {
     private readonly AuthService authService;
     private readonly TokenService tokenService;
+    private readonly PasswordService passwordService;
     private readonly UserManager<ApiUser> userManager;
     private readonly WebAppSettings webAppSettings;
 
     public AuthController(AuthService authService,
         UserManager<ApiUser> userManager,
+        PasswordService passwordService,
         TokenService tokenService,
         IOptions<WebAppSettings> webAppSettings)
     {
         this.authService = authService;
         this.userManager = userManager;
+        this.passwordService = passwordService;
         this.tokenService = tokenService;
         this.webAppSettings = webAppSettings.Value;
     }
@@ -120,6 +123,44 @@ public class AuthController : ControllerBase
         }
 
         return Redirect($"{webAppSettings.BaseUrl}");
+    }
+
+    // TODO: Move to auth models
+    public record ChangePasswordRequest([Required] string OldPassword, [Required] string NewPassword);
+
+    [Authorize]
+    [HttpPost("change-password")]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userName = User.FindFirstValue(ClaimTypes.Name);
+
+        if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(userName)) 
+            return Unauthorized();
+
+        var (oldPassword, newPassword) = request;
+
+        var result = await passwordService.ChangePasswordAsync(oldPassword, newPassword, userId);
+
+        if (result.Success) 
+        {
+            var loginResult = await authService.LoginAsync(userName, newPassword); 
+            if (loginResult.Success)
+            {
+                SetRefreshToken(loginResult.Data.RefreshToken);
+
+                return Ok();
+            }
+
+            return BadRequest("Password got changed, but user could not be signed in");
+        }
+
+        return result switch
+        {
+            SuccessResult<bool> => Ok(),
+            ErrorResult<bool> error => BadRequest(error.Errors),
+            _ => throw new NotImplementedException(),
+        };
     }
 
     [HttpPost("refresh-token")]

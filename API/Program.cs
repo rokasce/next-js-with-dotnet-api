@@ -95,6 +95,7 @@ builder.Services
 
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<TokenService>();
+builder.Services.AddScoped<PasswordService>();
 
 var corsPolicyName = "AllowAll";
 builder.Services.AddCors(options =>
