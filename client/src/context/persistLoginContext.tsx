@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import useRefreshToken from "../hooks/useRefreshToken";
 import useAuth from "../hooks/useAuth";
+import { usePathname } from "next/navigation";
 
 type UserContext = {
   isLoading: boolean;
@@ -21,6 +22,8 @@ export const PersistLoginProvider = ({
   const { refresh } = useRefreshToken();
   const { auth } = useAuth();
 
+  const path = usePathname();
+
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -33,6 +36,12 @@ export const PersistLoginProvider = ({
         setIsLoading(false);
       }
     };
+
+    // TODO: Move it to middleware
+    if (path === "/login" || path === "/register" || path === "/") {
+      setIsLoading(false);
+      return;
+    }
 
     if (!auth?.accessToken) {
       verifyRefreshToken();
