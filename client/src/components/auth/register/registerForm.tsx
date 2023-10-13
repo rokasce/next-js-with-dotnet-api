@@ -143,7 +143,7 @@ export default function RegisterForm() {
         <Button
           type="submit"
           className="w-full"
-          disabled={!form.formState.isSubmitting}
+          disabled={form.formState.isSubmitting}
         >
           Sign Up
         </Button>
