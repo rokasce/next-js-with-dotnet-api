@@ -125,9 +125,6 @@ public class AuthController : ControllerBase
         return Redirect($"{webAppSettings.BaseUrl}");
     }
 
-    // TODO: Move to auth models
-    public record ChangePasswordRequest([Required] string CurrentPassword, [Required] string NewPassword);
-
     [Authorize]
     [HttpPost("change-password")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)

@@ -9,3 +9,6 @@ public record RegisterRequest(
 public record LoginRequest(
     [Required(ErrorMessage = "Email is required")] string Email,
     [Required(ErrorMessage = "Password is required")] string Password);
+
+public record ChangePasswordRequest(
+    [Required] string CurrentPassword, [Required] string NewPassword);
