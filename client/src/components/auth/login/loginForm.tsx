@@ -131,11 +131,11 @@ export default function LoginForm() {
                     className="absolute right-2"
                     onClick={() => setPasswordVisible(!passwordVisible)}
                   >
-                    {passwordVisible ? <EyeOpenIcon /> : <EyeClosedIcon />}{" "}
+                    {passwordVisible ? <EyeOpenIcon /> : <EyeClosedIcon />}
                   </Button>
                   <Input
                     placeholder="Enter your password"
-                    type="password"
+                    type={passwordVisible ? "text" : "password"}
                     {...field}
                   />
                 </div>
