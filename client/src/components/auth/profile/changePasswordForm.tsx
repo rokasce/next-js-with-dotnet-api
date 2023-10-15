@@ -124,7 +124,6 @@ export default function ChangePasswordForm() {
             </FormItem>
           )}
         />
-
         <FormField
           control={form.control}
           name="newPassword"
@@ -142,11 +141,10 @@ export default function ChangePasswordForm() {
             </FormItem>
           )}
         />
-
         <Button
           type="submit"
-          className="w-full"
           disabled={!form.formState.isValid}
+          className="mt-2"
         >
           Change password
         </Button>
