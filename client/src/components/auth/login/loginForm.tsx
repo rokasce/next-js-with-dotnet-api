@@ -21,10 +21,11 @@ import { useState } from "react";
 import { AbsoluteSpinner } from "../../ui/spinner";
 import { usePersistLoginContext } from "@/context/persistLoginContext";
 import { EyeClosedIcon, EyeOpenIcon } from "@radix-ui/react-icons";
+import { PASSWORD_REGEX } from "@/lib/constants";
 
 const LoginFormSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(8).max(255),
+  password: z.string().min(6).regex(PASSWORD_REGEX).max(255),
 });
 
 export default function LoginForm() {

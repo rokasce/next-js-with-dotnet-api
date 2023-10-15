@@ -19,12 +19,13 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
 import { AbsoluteSpinner } from "../../ui/spinner";
+import { PASSWORD_REGEX } from "@/lib/constants";
 
 const RegisterFormSchema = z
   .object({
     email: z.string().email(),
-    password: z.string().min(8).max(255),
-    confirmPassword: z.string().min(8).max(255),
+    password: z.string().min(6).max(255).regex(PASSWORD_REGEX),
+    confirmPassword: z.string().min(6).max(255).regex(PASSWORD_REGEX),
   })
   .refine((data) => data.password === data.confirmPassword, {
     path: ["confirmPassword"],

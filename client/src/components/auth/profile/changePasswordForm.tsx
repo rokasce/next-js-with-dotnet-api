@@ -18,11 +18,12 @@ import { Input } from "@/components/ui/input";
 import useApi from "@/hooks/useApi";
 import { AxiosError } from "axios";
 import { toast } from "@/components/ui/use-toast";
+import { PASSWORD_REGEX } from "@/lib/constants";
 
 const ChangePasswordFormSchema = z
   .object({
-    currentPassword: z.string().min(8).max(255),
-    newPassword: z.string().min(8).max(255),
+    currentPassword: z.string().min(6).max(255).regex(PASSWORD_REGEX),
+    newPassword: z.string().min(6).max(255).regex(PASSWORD_REGEX),
   })
   .refine((data) => data.newPassword !== data.currentPassword, {
     message: "New password must be different from current password",
