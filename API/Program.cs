@@ -69,7 +69,7 @@ builder.Services
             ValidAudience = jwtSettings!.Audience,
             ValidateAudience = true,
             ValidateLifetime = true,
-            ClockSkew = TimeSpan.FromMinutes(1)
+            ClockSkew = TimeSpan.Zero
         };
 
         x.Events = new JwtBearerEvents

@@ -133,27 +133,14 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var userName = User.FindFirstValue(ClaimTypes.Name);
+        var userName = User.FindFirstValue(ClaimTypes.Email);
 
-        if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(userName)) 
+        if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(userName))
             return Unauthorized();
 
         var (oldPassword, newPassword) = request;
 
         var result = await passwordService.ChangePasswordAsync(oldPassword, newPassword, userId);
-
-        if (result.Success) 
-        {
-            var loginResult = await authService.LoginAsync(userName, newPassword); 
-            if (loginResult.Success)
-            {
-                SetRefreshToken(loginResult.Data.RefreshToken);
-
-                return Ok();
-            }
-
-            return BadRequest("Password got changed, but user could not be signed in");
-        }
 
         return result switch
         {
