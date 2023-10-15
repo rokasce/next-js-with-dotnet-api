@@ -126,7 +126,7 @@ public class AuthController : ControllerBase
     }
 
     // TODO: Move to auth models
-    public record ChangePasswordRequest([Required] string OldPassword, [Required] string NewPassword);
+    public record ChangePasswordRequest([Required] string CurrentPassword, [Required] string NewPassword);
 
     [Authorize]
     [HttpPost("change-password")]
