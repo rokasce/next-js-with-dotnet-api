@@ -22,8 +22,7 @@ export function UserNav({ email }: Props) {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-9 w-9">
-            {/* TODO: Add avatar image */}
-            <AvatarImage src="/avatars/03.png" alt="@shadcn" />
+            <AvatarImage src="/avatars/04.png" alt="@shadcn" />
             <AvatarFallback>SC</AvatarFallback>
           </Avatar>
         </Button>
@@ -40,7 +39,7 @@ export function UserNav({ email }: Props) {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem>
-            <Link href="/profile">Profile</Link>
+            <Link href="/settings">Profile</Link>
             <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
           </DropdownMenuItem>
         </DropdownMenuGroup>

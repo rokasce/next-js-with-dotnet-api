@@ -5,6 +5,7 @@ import { Inter } from "next/font/google";
 import Navbar from "@/components/navbar";
 import { PersistLoginProvider } from "@/context/persistLoginContext";
 import { ThemeProvider } from "@/context/themeProvider";
+import { cn } from "@/lib/utils";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,21 +21,28 @@ type Props = {
 export default function RootLayout({ children }: Props) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body
+        className={cn(
+          "min-h-screen bg-background font-sans antialiased",
+          inter,
+        )}
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <main className="flex h-screen flex-col items-center pt-[56px]">
-            <AuthProvider>
-              <PersistLoginProvider>
-                <Navbar />
-                {children}
-              </PersistLoginProvider>
-            </AuthProvider>
-          </main>
+          <div className="relative flex min-h-screen flex-col pt-[56px]">
+            <main className="flex h-screen flex-col items-center">
+              <AuthProvider>
+                <PersistLoginProvider>
+                  <Navbar />
+                  {children}
+                </PersistLoginProvider>
+              </AuthProvider>
+            </main>
+          </div>
         </ThemeProvider>
       </body>
     </html>
