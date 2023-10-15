@@ -97,6 +97,8 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<PasswordService>();
 
+builder.Services.AddSingleton<IEmailService, LoggingEmailService>();
+
 var corsPolicyName = "AllowAll";
 builder.Services.AddCors(options =>
 {
