@@ -2,14 +2,8 @@
 
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { EyeClosedIcon, EyeOpenIcon } from "@radix-ui/react-icons";
 import { useForm } from "react-hook-form";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "../../ui/card";
 import {
   Form,
   FormControl,
@@ -41,6 +35,7 @@ export default function RegisterForm() {
   const { push } = useRouter();
 
   const [error, setError] = useState<string | null>(null);
+  const [passwordVisible, setPasswordVisible] = useState(false);
 
   const form = useForm<z.infer<typeof RegisterFormSchema>>({
     resolver: zodResolver(RegisterFormSchema),
@@ -113,11 +108,22 @@ export default function RegisterForm() {
             <FormItem className="my-4">
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="Enter your password"
-                  type="password"
-                  {...field}
-                />
+                <div className="relative">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    type="button"
+                    className="absolute right-2"
+                    onClick={() => setPasswordVisible(!passwordVisible)}
+                  >
+                    {passwordVisible ? <EyeOpenIcon /> : <EyeClosedIcon />}
+                  </Button>
+                  <Input
+                    placeholder="Enter your password"
+                    type={passwordVisible ? "text" : "password"}
+                    {...field}
+                  />
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -132,7 +138,7 @@ export default function RegisterForm() {
               <FormControl>
                 <Input
                   placeholder="Confirm your password"
-                  type="password"
+                  type={passwordVisible ? "text" : "password"}
                   {...field}
                 />
               </FormControl>

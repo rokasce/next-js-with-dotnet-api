@@ -20,6 +20,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { AbsoluteSpinner } from "../../ui/spinner";
 import { usePersistLoginContext } from "@/context/persistLoginContext";
+import { EyeClosedIcon, EyeOpenIcon } from "@radix-ui/react-icons";
 
 const LoginFormSchema = z.object({
   email: z.string().email(),
@@ -32,6 +33,7 @@ export default function LoginForm() {
   const { push } = useRouter();
 
   const [error, setError] = useState<string | null>(null);
+  const [passwordVisible, setPasswordVisible] = useState(false);
 
   const form = useForm<z.infer<typeof LoginFormSchema>>({
     resolver: zodResolver(LoginFormSchema),
@@ -121,11 +123,22 @@ export default function LoginForm() {
             <FormItem className="my-4">
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="Enter your password"
-                  type="password"
-                  {...field}
-                />
+                <div className="relative">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    type="button"
+                    className="absolute right-2"
+                    onClick={() => setPasswordVisible(!passwordVisible)}
+                  >
+                    {passwordVisible ? <EyeOpenIcon /> : <EyeClosedIcon />}{" "}
+                  </Button>
+                  <Input
+                    placeholder="Enter your password"
+                    type="password"
+                    {...field}
+                  />
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
