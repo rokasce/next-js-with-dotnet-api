@@ -6,6 +6,7 @@ import Navbar from "@/components/navbar";
 import { PersistLoginProvider } from "@/context/persistLoginContext";
 import { ThemeProvider } from "@/context/themeProvider";
 import { cn } from "@/lib/utils";
+import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -44,6 +45,7 @@ export default function RootLayout({ children }: Props) {
             </main>
           </div>
         </ThemeProvider>
+        <Toaster />
       </body>
     </html>
   );
