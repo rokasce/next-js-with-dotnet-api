@@ -12,3 +12,5 @@ public record LoginRequest(
 
 public record ChangePasswordRequest(
     [Required] string CurrentPassword, [Required] string NewPassword);
+
+public record ConfirmEmailRequest([Required] string Email, [Required] string Token);

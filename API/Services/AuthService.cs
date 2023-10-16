@@ -1,8 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
+using System.Text;
 using API.Entities;
 using API.Models.DTO;
+using HandlebarsDotNet;
 using Microsoft.AspNetCore.Identity;
+using MimeKit.Encodings;
 
 namespace API.Services;
 
@@ -11,15 +14,20 @@ public class AuthService
 {
     private readonly UserManager<ApiUser> userManager;
     private readonly TokenService tokenService;
+    private readonly IEmailService emailService;
 
-    public AuthService(UserManager<ApiUser> userManager, TokenService tokenService)
+    public AuthService(
+        UserManager<ApiUser> userManager,
+        TokenService tokenService,
+        IEmailService emailService)
     {
         this.userManager = userManager;
         this.userManager = userManager;
         this.tokenService = tokenService;
+        this.emailService = emailService;
     }
 
-    public async Task<Result<RegisterResult>> RegisterAsync(string email, string password)
+    public async Task<Result<RegisterResult>> RegisterAsync(string email, string password, string basePath)
     {
         var user = await userManager.FindByEmailAsync(email);
 
@@ -36,7 +44,18 @@ public class AuthService
         {
             var result = await userManager.CreateAsync(newUser, password);
             if (result.Succeeded)
+            {
+                var emailConfirmationToken = await userManager.GenerateEmailConfirmationTokenAsync(newUser);
+                var encodedToken = Convert.ToBase64String(Encoding.UTF8.GetBytes(emailConfirmationToken));
+                var confirmationUrl = $"{basePath}/auth/confirm-email?token={encodedToken}&email={email}";
+
+                await emailService.SendEmailAsync(
+                    "EmailConfirmation",
+                    new EmailData(email, "Please confirm your email address"), 
+                    new { USER_EMAIL = user?.Email, CONFIRM_EMAIL_URL = confirmationUrl });
+
                 return new SuccessResult<RegisterResult>(new RegisterResult(newUser));
+            }
 
             return new ErrorResult<RegisterResult>(
                 "Failed to create user",
@@ -148,6 +167,27 @@ public class AuthService
             new Error("External login failed", result.Errors.FirstOrDefault()?.Description ?? "Unknown")
         };
         return new ErrorResult<LoginResult>("ExternalLoginFailed", error);
+    }
+
+    public async Task<Result<bool>> ValidateEmailConfirmationToken(string email, string encodedToken) 
+    {
+        var user = await userManager.FindByEmailAsync(email);
+
+        if (user is null) 
+        { 
+            return new ErrorResult<bool>("User not found"); 
+        }
+
+        var decodedToken = Encoding.UTF8.GetString(Convert.FromBase64String(encodedToken));
+
+        var result = await userManager.ConfirmEmailAsync(user, decodedToken!);
+
+        if (!result.Succeeded) 
+        {
+            return new ErrorResult<bool>("Could not validate user email"); 
+        }
+
+        return new SuccessResult<bool>(true);
     }
 }
 

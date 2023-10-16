@@ -8,7 +8,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MailKit" Version="4.2.0" />
+    <None Remove="Templates\Emails\EmailConfirmationTemplate.hbs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Templates\Emails\EmailConfirmationTemplate.hbs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentEmail.MailKit" Version="3.0.2" />
+    <PackageReference Include="Handlebars.Net" Version="2.1.4" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="7.0.11" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.11" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.11" />
@@ -21,6 +32,10 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.11" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Assets\" />
   </ItemGroup>
 
 </Project>

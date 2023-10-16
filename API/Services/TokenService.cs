@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using API.Models.DTO;
 
 namespace API.Services;
 
@@ -64,6 +65,7 @@ public class TokenService
         var tokenHandler = new JwtSecurityTokenHandler();
         var validationParameters = new TokenValidationParameters
         {
+            // TODO: Make these secure
             ValidateIssuer = false,
             ValidateAudience = false,
             ValidateLifetime = true,
@@ -89,4 +91,5 @@ public class TokenService
         {
             return null;
         }
-    }}
+    }
+}

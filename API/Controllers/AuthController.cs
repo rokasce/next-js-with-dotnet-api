@@ -40,6 +40,7 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Register([FromBody] RegisterRequest registerRequest)
     {
         var (email, password) = registerRequest;
+
         var baseUrl = $"{Request.Scheme}://{Request.Host}";
 
         var registerResult = await authService.RegisterAsync(email, password, baseUrl);
@@ -76,6 +77,23 @@ public class AuthController : ControllerBase
             _ => throw new ArgumentOutOfRangeException(nameof(loginResult))
         };
     }
+
+    [HttpGet("confirm-email")]
+    public async Task<IActionResult> ConfirmEmail([FromQuery] ConfirmEmailRequest request) 
+    {
+        var (email, token) = request;
+
+        if (token is null || email is null) return Unauthorized();
+
+        var result = await authService.ValidateEmailConfirmationToken(email, token);
+
+        return result switch {
+            SuccessResult<bool> _ => Ok(),
+            ErrorResult<bool> error => BadRequest(error),
+            _ => throw new ArgumentOutOfRangeException(nameof(result))
+        };
+    }
+
 
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
