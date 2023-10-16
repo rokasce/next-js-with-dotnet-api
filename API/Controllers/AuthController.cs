@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using API.Configurations;
@@ -41,7 +40,9 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Register([FromBody] RegisterRequest registerRequest)
     {
         var (email, password) = registerRequest;
-        var registerResult = await authService.RegisterAsync(email, password);
+        var baseUrl = $"{Request.Scheme}://{Request.Host}";
+
+        var registerResult = await authService.RegisterAsync(email, password, baseUrl);
 
         return registerResult switch
         {
