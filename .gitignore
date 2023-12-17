@@ -432,3 +432,5 @@ yarn-error.log*
 next-env.d.ts
 
 global.json
+
+.env
