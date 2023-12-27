@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { cn } from "@/lib/utils"; 
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/context/authContext";
+import { NavigationBar } from "@/components/navbar";
 import { ThemeProvider } from "@/context/themeProvider";
 import { PersistLoginProvider } from "@/context/persistLoginContext";
 
@@ -33,7 +34,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           disableTransitionOnChange
         >
           <div className="relative flex min-h-screen flex-col pt-[56px]">
-            <main className="flex h-screen flex-col items-center">
+            <main className="flex flex-col items-center">
               <AuthProvider>
                 <PersistLoginProvider>
                   {children}
