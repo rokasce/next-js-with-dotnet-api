@@ -198,7 +198,7 @@ public class AuthController : ControllerBase
         return Ok(new
         {
             accessToken = new JwtSecurityTokenHandler().WriteToken(accessToken),
-            user = new User(user.Email!),
+            user = new User(user.Email!, user.Avatar),
             expires = token.ValidTo
         });
     }

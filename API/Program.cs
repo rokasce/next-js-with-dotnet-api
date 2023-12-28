@@ -52,6 +52,9 @@ builder.Services.AddOptions<WebAppSettings>()
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
+builder.Services.AddOptions<BlobStorageSettings>()
+    .BindConfiguration(BlobStorageSettings.SectionName);
+
 builder.Services
     .AddAuthentication(x =>
     {
@@ -98,6 +101,8 @@ builder.Services
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<PasswordService>();
+builder.Services.AddScoped<ProfileService>();
+builder.Services.AddScoped<FileService>();
 
 builder.Services.AddSingleton<IEmailService, LoggingEmailService>();
 

@@ -3,9 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using API.Entities;
 using API.Models.DTO;
-using HandlebarsDotNet;
 using Microsoft.AspNetCore.Identity;
-using MimeKit.Encodings;
 
 namespace API.Services;
 
@@ -51,7 +49,7 @@ public class AuthService
 
                 await emailService.SendEmailAsync(
                     "EmailConfirmation",
-                    new EmailData(email, "Please confirm your email address"), 
+                    new EmailData(email, "Please confirm your email address"),
                     new { USER_EMAIL = user?.Email, CONFIRM_EMAIL_URL = confirmationUrl });
 
                 return new SuccessResult<RegisterResult>(new RegisterResult(newUser));
@@ -169,22 +167,22 @@ public class AuthService
         return new ErrorResult<LoginResult>("ExternalLoginFailed", error);
     }
 
-    public async Task<Result<bool>> ValidateEmailConfirmationToken(string email, string encodedToken) 
+    public async Task<Result<bool>> ValidateEmailConfirmationToken(string email, string encodedToken)
     {
         var user = await userManager.FindByEmailAsync(email);
 
-        if (user is null) 
-        { 
-            return new ErrorResult<bool>("User not found"); 
+        if (user is null)
+        {
+            return new ErrorResult<bool>("User not found");
         }
 
         var decodedToken = Encoding.UTF8.GetString(Convert.FromBase64String(encodedToken));
 
         var result = await userManager.ConfirmEmailAsync(user, decodedToken!);
 
-        if (!result.Succeeded) 
+        if (!result.Succeeded)
         {
-            return new ErrorResult<bool>("Could not validate user email"); 
+            return new ErrorResult<bool>("Could not validate user email");
         }
 
         return new SuccessResult<bool>(true);
