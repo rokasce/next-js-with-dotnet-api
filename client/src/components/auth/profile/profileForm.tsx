@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
+import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFieldArray, useForm } from "react-hook-form";
-import * as z from "zod";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -16,16 +15,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { toast } from "@/components/ui/use-toast";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-// import { toast } from "@/components/ui/use-toast";
+import { ImageField } from "@/components/ui/image-field";
+import { useEffect, useState } from "react";
+import { AbsoluteSpinner } from "@/components/ui/spinner";
+import useApi from "@/hooks/useApi";
 
 const profileFormSchema = z.object({
   username: z
@@ -36,12 +32,10 @@ const profileFormSchema = z.object({
     .max(30, {
       message: "Username must not be longer than 30 characters.",
     }),
-  email: z
-    .string({
-      required_error: "Please select an email to display.",
-    })
-    .email(),
   bio: z.string().max(160).min(4),
+  avatar: z
+    .any()
+    .refine((files) => files?.length === 1, "Please upload an image."),
   urls: z
     .array(
       z.object({
@@ -55,6 +49,7 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 // This can come from your database or API.
 const defaultValues: Partial<ProfileFormValues> = {
+  username: "shadcn",
   bio: "I own a computer.",
   urls: [
     { value: "https://shadcn.com" },
@@ -63,30 +58,83 @@ const defaultValues: Partial<ProfileFormValues> = {
 };
 
 export function ProfileForm() {
+  const [loading, setLoading] = useState(true);
+
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues,
     mode: "onChange",
   });
 
+  const { api } = useApi();
+
   const { fields, append } = useFieldArray({
     name: "urls",
     control: form.control,
   });
 
-  function onSubmit(data: ProfileFormValues) {
-    // toast({
-    //   title: "You submitted the following values:",
-    //   description: (
-    //     <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-    //       <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-    //     </pre>
-    //   ),
-    // });
+  // FIXME: This throws a warning
+  useEffect(() => {
+    getInitialValues();
+  }, []);
+
+  async function getInitialValues() {
+    setLoading(true);
+    try {
+      const result = await api.get("/profile/me");
+      const data = {
+        username: result.data.username,
+        bio: result.data.bio,
+        avatar: result.data.avatar,
+        urls: [],
+      };
+
+      form.reset(data);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function onSubmit(data: ProfileFormValues) {
+    try {
+      const formData = new FormData();
+      formData.append("username", data.username);
+      formData.append("avatar", data.avatar[0]);
+      formData.append("bio", data.bio);
+
+      const result = await api.put("/profile/update", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      const updatedData = {
+        username: result.data.username,
+        bio: result.data.bio,
+        avatar: result.data.avatar,
+      };
+
+      form.reset(updatedData);
+
+      toast({
+        title: "Profile updated successfully!",
+        description: "Your profile has been updated.",
+      });
+    } catch (error) {
+      toast({
+        title: "Uh oh! Something went wrong.",
+        variant: "destructive",
+        description:
+          "There was an error updating your profile. Please try again.",
+      });
+    }
   }
 
   return (
     <Form {...form}>
+      {loading && <AbsoluteSpinner />}
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <FormField
           control={form.control}
@@ -105,32 +153,7 @@ export function ProfileForm() {
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a verified email to display" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="m@example.com">m@example.com</SelectItem>
-                  <SelectItem value="m@google.com">m@google.com</SelectItem>
-                  <SelectItem value="m@support.com">m@support.com</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormDescription>
-                You can manage verified email addresses in your{" "}
-                <Link href="/examples/forms">email settings</Link>.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+
         <FormField
           control={form.control}
           name="bio"
@@ -152,6 +175,13 @@ export function ProfileForm() {
             </FormItem>
           )}
         />
+
+        <ImageField
+          name="avatar"
+          description="This image will be displayed on your profile and next to your comments"
+          form={form}
+        />
+
         <div>
           {fields.map((field, index) => (
             <FormField
@@ -184,6 +214,7 @@ export function ProfileForm() {
             Add URL
           </Button>
         </div>
+
         <Button type="submit">Update profile</Button>
       </form>
     </Form>

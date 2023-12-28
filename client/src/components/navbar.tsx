@@ -18,7 +18,6 @@ export function NavigationBar() {
         <Link href="/login" className={buttonVariants()}>
           Login
         </Link>
-
       </div>
     </nav>
   );
@@ -31,15 +30,17 @@ export function UserNavigationBar() {
     return null;
   }
 
-  return(
-      <nav className="fixed top-0 z-10 w-full border-b bg-background py-2">
-        <div className="item-center container flex justify-between">
-          <Link href="/home">Logo</Link>
+  const { user } = auth;
 
-          <ModeToggle />
+  return (
+    <nav className="fixed top-0 z-10 w-full border-b bg-background py-2">
+      <div className="item-center container flex justify-between">
+        <Link href="/home">Logo</Link>
 
-          <UserNav email={auth.user.email} />
-        </div>
-      </nav>
-    );
+        <ModeToggle />
+
+        <UserNav email={user.email} avatar={user.avatar} />
+      </div>
+    </nav>
+  );
 }

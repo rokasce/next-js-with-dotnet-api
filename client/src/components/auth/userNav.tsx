@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,21 +10,21 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { Button, buttonVariants } from "../ui/button";
+import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import Link from "next/link";
 
 type Props = {
   email: string;
+  avatar: string;
 };
 
-export function UserNav({ email }: Props) {
+export function UserNav({ email, avatar }: Props) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-9 w-9">
-            <AvatarImage src="/avatars/04.png" alt="@shadcn" />
+            <AvatarImage src={avatar ?? "/avatars/04"} alt="@shadcn" />
             <AvatarFallback>SC</AvatarFallback>
           </Avatar>
         </Button>

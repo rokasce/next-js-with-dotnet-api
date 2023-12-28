@@ -16,6 +16,7 @@ type Auth = {
   expires: Date;
   user: {
     email: string;
+    avatar: string;
   };
 };
 
