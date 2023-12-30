@@ -2,9 +2,8 @@
 
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useFieldArray, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -36,68 +35,56 @@ const profileFormSchema = z.object({
   avatar: z
     .any()
     .refine((files) => files?.length === 1, "Please upload an image."),
-  urls: z
-    .array(
-      z.object({
-        value: z.string().url({ message: "Please enter a valid URL." }),
-      }),
-    )
-    .optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
-
-// This can come from your database or API.
-const defaultValues: Partial<ProfileFormValues> = {
-  username: "shadcn",
-  bio: "I own a computer.",
-  urls: [
-    { value: "https://shadcn.com" },
-    { value: "http://twitter.com/shadcn" },
-  ],
-};
 
 export function ProfileForm() {
   const [loading, setLoading] = useState(true);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
-    defaultValues,
+    defaultValues: {
+      username: "",
+      bio: "",
+    },
     mode: "onChange",
   });
 
   const { api } = useApi();
 
-  const { fields, append } = useFieldArray({
-    name: "urls",
-    control: form.control,
-  });
-
-  // FIXME: This throws a warning
+  // TODO: Fix this warning
   useEffect(() => {
     getInitialValues();
   }, []);
 
-  async function getInitialValues() {
+  async function getInitialValues(): Promise<void> {
     setLoading(true);
     try {
       const result = await api.get("/profile/me");
-      const data = {
+      const formData = {
         username: result.data.username,
         bio: result.data.bio,
         avatar: result.data.avatar,
-        urls: [],
       };
-
-      form.reset(data);
+      form.reset(formData);
     } catch (error) {
-      console.log(error);
+      form.reset({
+        username: "",
+        bio: "I own a computer.",
+      });
+      toast({
+        title: "Uh oh! Something went wrong.",
+        variant: "destructive",
+        description: "There was an error loading your profile.",
+      });
     } finally {
       setLoading(false);
     }
   }
 
   async function onSubmit(data: ProfileFormValues) {
+    setLoading(true);
     try {
       const formData = new FormData();
       formData.append("username", data.username);
@@ -129,6 +116,8 @@ export function ProfileForm() {
         description:
           "There was an error updating your profile. Please try again.",
       });
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -178,42 +167,10 @@ export function ProfileForm() {
 
         <ImageField
           name="avatar"
+          label="Avatar"
           description="This image will be displayed on your profile and next to your comments"
           form={form}
         />
-
-        <div>
-          {fields.map((field, index) => (
-            <FormField
-              control={form.control}
-              key={field.id}
-              name={`urls.${index}.value`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className={cn(index !== 0 && "sr-only")}>
-                    URLs
-                  </FormLabel>
-                  <FormDescription className={cn(index !== 0 && "sr-only")}>
-                    Add links to your website, blog, or social media profiles.
-                  </FormDescription>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          ))}
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="mt-2"
-            onClick={() => append({ value: "" })}
-          >
-            Add URL
-          </Button>
-        </div>
 
         <Button type="submit">Update profile</Button>
       </form>

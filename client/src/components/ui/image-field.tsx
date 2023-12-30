@@ -8,21 +8,19 @@ import {
   FormLabel,
   FormMessage,
 } from "./form";
-import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 import { Input } from "./input";
+import { Avatar, AvatarImage } from "./avatar";
 
 type Props = {
   name: string;
+  label: string;
   description: string;
   form: any;
 };
 
-// TODO: Figure out how this works
 function getImageData(event: ChangeEvent<HTMLInputElement>) {
-  // FileList is immutable, so we need to create a new one
   const dataTransfer = new DataTransfer();
 
-  // Add newly uploaded images
   Array.from(event.target.files!).forEach((image) =>
     dataTransfer.items.add(image),
   );
@@ -33,7 +31,7 @@ function getImageData(event: ChangeEvent<HTMLInputElement>) {
   return { files, displayUrl };
 }
 
-export function ImageField({ name, form, description }: Props) {
+export function ImageField({ name, label, description, form }: Props) {
   const [preview, setPreview] = useState<string | undefined>();
 
   const previewUrl = form.getValues()[name];
@@ -48,7 +46,6 @@ export function ImageField({ name, form, description }: Props) {
     <>
       <Avatar className="h-24 w-24">
         <AvatarImage src={preview} />
-        {!preview && <AvatarFallback>Loading...</AvatarFallback>}
       </Avatar>
       <FormField
         control={form.control}
@@ -56,7 +53,7 @@ export function ImageField({ name, form, description }: Props) {
         render={({ field: { onChange, value, ...rest } }) => (
           <>
             <FormItem>
-              <FormLabel>Circle Image</FormLabel>
+              <FormLabel>{label}</FormLabel>
               <FormControl>
                 <Input
                   type="file"

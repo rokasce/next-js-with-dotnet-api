@@ -18,7 +18,7 @@ export default function useApi() {
       },
       (error) => {
         return Promise.reject(error);
-      }
+      },
     );
 
     const responseInterceptor = API.interceptors.response.use(
@@ -38,7 +38,7 @@ export default function useApi() {
         }
 
         return Promise.reject(error);
-      }
+      },
     );
 
     return () => {
