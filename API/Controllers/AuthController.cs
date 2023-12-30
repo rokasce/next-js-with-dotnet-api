@@ -4,6 +4,7 @@ using API.Configurations;
 using API.Entities;
 using API.Models.DTO;
 using API.Models.DTO.V1.Requests;
+using API.Routes;
 using API.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -14,7 +15,6 @@ using Microsoft.Extensions.Options;
 
 namespace API.Controllers;
 
-[Route("[controller]")]
 public class AuthController : ControllerBase
 {
     private readonly AuthService authService;
@@ -36,7 +36,7 @@ public class AuthController : ControllerBase
         this.webAppSettings = webAppSettings.Value;
     }
 
-    [HttpPost("register")]
+    [HttpPost(AppRoutes.Authentication.Register)]
     public async Task<IActionResult> Register([FromBody] RegisterRequest registerRequest)
     {
         var (email, password) = registerRequest;
@@ -53,7 +53,7 @@ public class AuthController : ControllerBase
         };
     }
 
-    [HttpPost("login")]
+    [HttpPost(AppRoutes.Authentication.Login)]
     public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
     {
 
@@ -78,8 +78,8 @@ public class AuthController : ControllerBase
         };
     }
 
-    [HttpGet("confirm-email")]
-    public async Task<IActionResult> ConfirmEmail([FromQuery] ConfirmEmailRequest request) 
+    [HttpGet(AppRoutes.Authentication.ConfirmEmail)]
+    public async Task<IActionResult> ConfirmEmail([FromQuery] ConfirmEmailRequest request)
     {
         var (email, token) = request;
 
@@ -87,7 +87,8 @@ public class AuthController : ControllerBase
 
         var result = await authService.ValidateEmailConfirmationToken(email, token);
 
-        return result switch {
+        return result switch
+        {
             SuccessResult<bool> _ => Ok(),
             ErrorResult<bool> error => BadRequest(error),
             _ => throw new ArgumentOutOfRangeException(nameof(result))
@@ -95,7 +96,7 @@ public class AuthController : ControllerBase
     }
 
 
-    [HttpPost("logout")]
+    [HttpPost(AppRoutes.Authentication.Logout)]
     public async Task<IActionResult> Logout()
     {
         // TODO: Check if Third party token is being invalidated after login
@@ -107,7 +108,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost]
-    [Route("login/{provider}")]
+    [Route(AppRoutes.Authentication.ExternalLogin)]
     public IActionResult ExternalLogin(string provider)
     {
         return Challenge(
@@ -116,7 +117,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpGet]
-    [Route("signing/{provider}")]
+    [Route(AppRoutes.Authentication.SignInExternal)]
     public async Task<IActionResult> ExternalLoginComplete(string provider)
     {
         // TODO: Signing in with Google account will override account password of the same email.
@@ -145,7 +146,7 @@ public class AuthController : ControllerBase
     }
 
     [Authorize]
-    [HttpPost("change-password")]
+    [HttpPost(AppRoutes.Authentication.ChangePassword)]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -166,7 +167,7 @@ public class AuthController : ControllerBase
         };
     }
 
-    [HttpPost("refresh-token")]
+    [HttpPost(AppRoutes.Authentication.RefreshToken)]
     public async Task<ActionResult> RefreshToken()
     {
         var refreshToken = Request.Cookies["refreshToken"];
@@ -216,3 +217,4 @@ public class AuthController : ControllerBase
         Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
     }
 }
+

@@ -1,6 +1,7 @@
 using Azure.Storage.Blobs;
 using API.Configurations;
 using Microsoft.Extensions.Options;
+using API.Models.DTO;
 
 namespace API.Services;
 
@@ -16,48 +17,35 @@ public class FileService
         filesContainer = client.GetBlobContainerClient("images");
     }
 
-    // TODO: Rewrite this function. Can we use our Result?
-    public async Task<BlobResponseDto> UploadAsync(IFormFile blob)
+    public async Task<Result<BlobDto>> UploadAsync(IFormFile file)
     {
-        BlobResponseDto response = new();
-        BlobClient client = filesContainer.GetBlobClient(blob.FileName);
-
         try
         {
-            await using Stream? data = blob.OpenReadStream();
-            await client.UploadAsync(data);
+            string format = Path.GetExtension(file.FileName);
+            BlobClient client = filesContainer.GetBlobClient($"{Guid.NewGuid}{format}");
+
+            await using Stream? data = file.OpenReadStream();
+            await client.UploadAsync(data, true);
+
+            return new SuccessResult<BlobDto>(
+                new BlobDto()
+                {
+                    Uri = client.Uri.AbsoluteUri,
+                    Name = client.Name,
+                }
+            );
         }
         catch (Exception)
         {
-            throw;
+            return new ErrorResult<BlobDto>("Could not upload a file");
         }
-
-        response.Status = $"File {blob.FileName} uploaded successfully";
-        response.Error = false;
-        response.Blob.Uri = client.Uri.AbsoluteUri;
-        response.Blob.Name = client.Name;
-
-        return response;
     }
 }
 
 public class BlobDto
 {
-    public string? Uri { get; set; }
-    public string? Name { get; set; }
+    public string Uri { get; set; }
+    public string Name { get; set; }
     public string? ContentType { get; set; }
     public Stream? Content { get; set; }
-}
-
-// TODO: Can we use Result for this?
-public class BlobResponseDto
-{
-    public BlobResponseDto()
-    {
-        Blob = new BlobDto();
-    }
-
-    public string? Status { get; set; }
-    public bool Error { get; set; }
-    public BlobDto Blob { get; set; }
 }

@@ -44,9 +44,11 @@ public class ProfileService
 
         if (updateProfileDto.Avatar != null)
         {
-            // TODO: Check if we don't need to map it
             var result = await fileService.UploadAsync(updateProfileDto.Avatar);
-            user.Avatar = result.Blob.Uri!;
+            if (result.Success) 
+            {
+                user.Avatar = result.Data.Uri;
+            }
         }
 
         if (!string.IsNullOrEmpty(updateProfileDto.Bio))

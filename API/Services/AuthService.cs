@@ -96,7 +96,7 @@ public class AuthService
                 .WriteToken(token);
 
             return new SuccessResult<LoginResult>(
-                new LoginResult(writtenToken, token.ValidTo, refreshToken.Token, new User(user.Email!)));
+                new LoginResult(writtenToken, token.ValidTo, refreshToken.Token, new User(user.Email!, user.Avatar)));
         }
         catch (Exception e)
         {
@@ -151,7 +151,7 @@ public class AuthService
 
 
                 return new SuccessResult<LoginResult>(
-                    new LoginResult(writtenToken, accessToken.ValidTo, refreshToken.Token, new User(user.Email!)));
+                    new LoginResult(writtenToken, accessToken.ValidTo, refreshToken.Token, new User(user.Email!, user.Avatar)));
             }
             catch (Exception e)
             {
