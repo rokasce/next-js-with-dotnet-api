@@ -10,6 +10,7 @@ namespace API.Services;
 // TODO: This is to complicated, please do some refactoring
 public class AuthService
 {
+    private readonly ILogger<AuthService> logger;
     private readonly UserManager<ApiUser> userManager;
     private readonly TokenService tokenService;
     private readonly IEmailService emailService;
@@ -17,12 +18,14 @@ public class AuthService
     public AuthService(
         UserManager<ApiUser> userManager,
         TokenService tokenService,
-        IEmailService emailService)
+        IEmailService emailService,
+        ILogger<AuthService> logger)
     {
         this.userManager = userManager;
         this.userManager = userManager;
         this.tokenService = tokenService;
         this.emailService = emailService;
+        this.logger = logger;
     }
 
     public async Task<Result<RegisterResult>> RegisterAsync(string email, string password, string basePath)
@@ -59,9 +62,9 @@ public class AuthService
                 "Failed to create user",
                 result.Errors.Select(e => new Error(e.Code, e.Description)).ToArray());
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
-            return new ErrorResult<RegisterResult>(e.Message);
+            return new ErrorResult<RegisterResult>(exception.Message);
         }
     }
 
@@ -82,10 +85,11 @@ public class AuthService
             user.RefreshTokens.Add(refreshToken);
             await userManager.UpdateAsync(user);
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
             return new ErrorResult<LoginResult>(
-                "Failed persisting refresh token", new[] { new Error("RefreshTokenPersistFail", e.Message) }
+                "Failed persisting refresh token", 
+                new[] { new Error("RefreshTokenPersistFail", exception.Message) }
             );
         }
 
@@ -98,9 +102,9 @@ public class AuthService
             return new SuccessResult<LoginResult>(
                 new LoginResult(writtenToken, token.ValidTo, refreshToken.Token, new User(user.Email!, user.Avatar)));
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
-            var errors = new[] { new Error("TokenGenerationFail", e.Message) };
+            var errors = new[] { new Error("TokenGenerationFail", exception.Message) };
             return new ErrorResult<LoginResult>("Failed generating AccessToken", errors);
         }
     }
@@ -136,10 +140,12 @@ public class AuthService
                 user.RefreshTokens.Add(refreshToken);
                 await userManager.UpdateAsync(user);
             }
-            catch (Exception e)
+            catch (Exception exception)
             {
+                logger.LogError("Failed updating user new refresh token: {Message}", exception.Message);
                 return new ErrorResult<LoginResult>(
-                    "Failed persisting refresh token", new[] { new Error("RefreshTokenPersistFail", e.Message) }
+                    "Failed persisting refresh token", 
+                    new[] { new Error("RefreshTokenPersistFail", exception.Message) }
                 );
             }
 
@@ -153,13 +159,13 @@ public class AuthService
                 return new SuccessResult<LoginResult>(
                     new LoginResult(writtenToken, accessToken.ValidTo, refreshToken.Token, new User(user.Email!, user.Avatar)));
             }
-            catch (Exception e)
+            catch (Exception exception)
             {
-                var errors = new[] { new Error("TokenGenerationFail", e.Message) };
+                logger.LogError("Failed writing token: {Message}", exception.Message);
+                var errors = new[] { new Error("TokenGenerationFail", exception.Message) };
                 return new ErrorResult<LoginResult>("Failed generating AccessToken", errors);
             }
         }
-
 
         var error = new[] {
             new Error("External login failed", result.Errors.FirstOrDefault()?.Description ?? "Unknown")

@@ -5,17 +5,18 @@ using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using API.Models.DTO;
 
 namespace API.Services;
 
 public class TokenService
 {
+    private readonly ILogger<TokenService> logger;
     private readonly JwtSettings jwtSettings;
 
-    public TokenService(IOptions<JwtSettings> jwtSettings)
+    public TokenService(IOptions<JwtSettings> jwtSettings, ILogger<TokenService> logger)
     {
         this.jwtSettings = jwtSettings.Value;
+        this.logger = logger;
     }
 
     public JwtSecurityToken GenerateAccessToken(ApiUser user)
@@ -65,7 +66,7 @@ public class TokenService
         var tokenHandler = new JwtSecurityTokenHandler();
         var validationParameters = new TokenValidationParameters
         {
-            // TODO: Make these secure
+            // TODO: Issuer and Audience is trowing SecurityTokenInvalidIssuerException on ExternalLogin
             ValidateIssuer = false,
             ValidateAudience = false,
             ValidateLifetime = true,
@@ -87,8 +88,11 @@ public class TokenService
 
             return jwtSecurityToken;
         }
-        catch (SecurityTokenException)
+        catch (SecurityTokenException exception)
         {
+            logger.LogError("Refresh token validation failed: {Message}", exception.Message);
+            logger.LogError("Failed validating refreshToken: {Token}", token);
+
             return null;
         }
     }
