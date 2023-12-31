@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Avatar, AvatarImage } from "../ui/avatar";
 
 type Props = {
   email: string;
@@ -24,15 +24,14 @@ export function UserNav({ email, avatar }: Props) {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-9 w-9">
-            <AvatarImage src={avatar ?? "/avatars/04"} alt="@shadcn" />
-            <AvatarFallback>SC</AvatarFallback>
+            <AvatarImage src={avatar ?? "/avatars/04"} alt="user-avatar" />
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">shadcn</p>
+            <p className="text-sm font-medium leading-none">Username</p>
             <p className="text-xs leading-none text-muted-foreground">
               {email}
             </p>
@@ -53,7 +52,7 @@ export function UserNav({ email, avatar }: Props) {
             method="POST"
             action={`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`}
           >
-            <Button type="submit" variant="ghost">
+            <Button type="submit" variant="outline">
               Log out
             </Button>
           </form>

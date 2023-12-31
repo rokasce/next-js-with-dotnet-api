@@ -1,4 +1,6 @@
 import { usePathname, useRouter } from "next/navigation";
+
+import { toast } from "@/components/ui/use-toast";
 import { PUBLIC_API } from "@/lib/api";
 import useAuthContext from "./useAuth";
 
@@ -28,7 +30,11 @@ export default function useRefreshToken() {
 
       return response.data.accessToken;
     } catch (error) {
-      // TODO: Handle error
+      toast({
+        title: "Error",
+        variant: "destructive",
+        description: "There was an error refreshing your session.",
+      });
       replace("/login");
     }
   };

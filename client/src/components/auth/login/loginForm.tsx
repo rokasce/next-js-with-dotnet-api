@@ -15,13 +15,14 @@ import { Input } from "../../ui/input";
 import { Button } from "../../ui/button";
 import { PUBLIC_API } from "@/lib/api";
 import useAuthContext from "@/hooks/useAuth";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AbsoluteSpinner } from "../../ui/spinner";
 import { usePersistLoginContext } from "@/context/persistLoginContext";
 import { EyeClosedIcon, EyeOpenIcon } from "@radix-ui/react-icons";
 import { PASSWORD_REGEX } from "@/lib/constants";
+import { toast } from "@/components/ui/use-toast";
 
 const LoginFormSchema = z.object({
   email: z.string().email(),
@@ -32,6 +33,7 @@ export default function LoginForm() {
   const { isLoading } = usePersistLoginContext();
   const { setAuth } = useAuthContext();
   const { push } = useRouter();
+  const searchParams = useSearchParams();
 
   const [error, setError] = useState<string | null>(null);
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -44,6 +46,18 @@ export default function LoginForm() {
       password: "",
     },
   });
+
+  // TODO: This does not work
+  useEffect(() => {
+    if (searchParams.has("error")) {
+      console.log("This runs:", searchParams.get("error"));
+      toast({
+        title: "Error",
+        variant: "destructive",
+        description: "There was an logging in with external provider.",
+      });
+    }
+  }, [searchParams]);
 
   async function onSubmit(values: z.infer<typeof LoginFormSchema>) {
     setError(null);
@@ -68,6 +82,12 @@ export default function LoginForm() {
       push("/home");
     } catch (error: any) {
       const { status } = error?.response;
+      toast({
+        title: "Error",
+        variant: "destructive",
+        description: "There was an error logging into your account.",
+      });
+
       if (status === 400) {
         setError("Invalid credentials");
 
