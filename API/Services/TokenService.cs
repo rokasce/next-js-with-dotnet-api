@@ -12,11 +12,15 @@ public class TokenService
 {
     private readonly ILogger<TokenService> logger;
     private readonly JwtSettings jwtSettings;
+    private readonly IDateTimeProvider dateTimeProvider;
 
-    public TokenService(IOptions<JwtSettings> jwtSettings, ILogger<TokenService> logger)
+    public TokenService(IOptions<JwtSettings> jwtSettings,
+        ILogger<TokenService> logger,
+        IDateTimeProvider dateTimeProvider)
     {
         this.jwtSettings = jwtSettings.Value;
         this.logger = logger;
+        this.dateTimeProvider = dateTimeProvider;
     }
 
     public JwtSecurityToken GenerateAccessToken(ApiUser user)
@@ -32,7 +36,7 @@ public class TokenService
             issuer: jwtSettings.Issuer,
             audience: jwtSettings.Audience,
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(jwtSettings.TokenDurationInMinutes),
+            expires: dateTimeProvider.GetUtcDateTimeNow().AddMinutes(jwtSettings.TokenDurationInMinutes),
             signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature)
         );
 
@@ -51,7 +55,7 @@ public class TokenService
             issuer: jwtSettings.Issuer,
             audience: jwtSettings.Audience,
             claims: claims,
-            expires: DateTime.UtcNow.AddDays(7),
+            expires: dateTimeProvider.GetUtcDateTimeNow().AddDays(7),
             signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
         );
 

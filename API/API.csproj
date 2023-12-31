@@ -9,6 +9,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Assets\**" />
+    <Content Remove="Assets\**" />
+    <EmbeddedResource Remove="Assets\**" />
+    <None Remove="Assets\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Templates\Emails\EmailConfirmationTemplate.hbs" />
   </ItemGroup>
 
@@ -34,10 +41,6 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.11" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.0.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Assets\" />
   </ItemGroup>
 
 </Project>

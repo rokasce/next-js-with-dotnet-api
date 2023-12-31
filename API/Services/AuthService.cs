@@ -1,13 +1,12 @@
-using System.ComponentModel.DataAnnotations;
-using System.IdentityModel.Tokens.Jwt;
-using System.Text;
 using API.Entities;
 using API.Models.DTO;
+using System.Text;
 using Microsoft.AspNetCore.Identity;
+using System.IdentityModel.Tokens.Jwt;
+using System.ComponentModel.DataAnnotations;
 
 namespace API.Services;
 
-// TODO: This is to complicated, please do some refactoring
 public class AuthService
 {
     private readonly ILogger<AuthService> logger;
@@ -88,7 +87,7 @@ public class AuthService
         catch (Exception exception)
         {
             return new ErrorResult<LoginResult>(
-                "Failed persisting refresh token", 
+                "Failed persisting refresh token",
                 new[] { new Error("RefreshTokenPersistFail", exception.Message) }
             );
         }
@@ -144,7 +143,7 @@ public class AuthService
             {
                 logger.LogError("Failed updating user new refresh token: {Message}", exception.Message);
                 return new ErrorResult<LoginResult>(
-                    "Failed persisting refresh token", 
+                    "Failed persisting refresh token",
                     new[] { new Error("RefreshTokenPersistFail", exception.Message) }
                 );
             }

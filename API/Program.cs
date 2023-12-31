@@ -98,11 +98,14 @@ builder.Services
            options.SignInScheme = IdentityConstants.ExternalScheme;
        });
 
+// TODO: Revise life-times
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<PasswordService>();
 builder.Services.AddScoped<ProfileService>();
 builder.Services.AddScoped<FileService>();
+
+builder.Services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
 
 builder.Services.AddSingleton<IEmailService, LoggingEmailService>();
 

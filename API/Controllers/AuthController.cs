@@ -142,7 +142,9 @@ public class AuthController : ControllerBase
             }
         }
 
-        return Redirect($"{webAppSettings.BaseUrl}");
+        var redirectUrl = $"{webAppSettings.BaseUrl}/login?error=external_login_failure";
+
+        return Redirect(redirectUrl);
     }
 
     [Authorize]

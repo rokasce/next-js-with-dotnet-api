@@ -1,20 +1,22 @@
-using Azure.Storage.Blobs;
-using API.Configurations;
-using Microsoft.Extensions.Options;
 using API.Models.DTO;
+using API.Configurations;
+using Azure.Storage.Blobs;
+using Microsoft.Extensions.Options;
 
 namespace API.Services;
 
 public class FileService
 {
+    private readonly ILogger<FileService> logger;
     private readonly BlobContainerClient filesContainer;
 
-    public FileService(IOptions<BlobStorageSettings> blobStorageSettings)
+    public FileService(IOptions<BlobStorageSettings> blobStorageSettings, ILogger<FileService> logger)
     {
         var blobStorageConfig = blobStorageSettings.Value;
         var client = new BlobServiceClient(blobStorageConfig.ConnectionString);
 
         filesContainer = client.GetBlobContainerClient("images");
+        this.logger = logger;
     }
 
     public async Task<Result<BlobDto>> UploadAsync(IFormFile file)
@@ -35,8 +37,9 @@ public class FileService
                 }
             );
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            logger.LogError("Failed to upload file: {Message}", exception.Message);
             return new ErrorResult<BlobDto>("Could not upload a file");
         }
     }
